@@ -348,7 +348,37 @@ export default {
       name: 'add-absence',
       label: { en: 'Add Absence', de: 'Fehlzeit hinzufügen' },
       event: {
-        timestamp: 'string'
+        timestamp: 'string',
+        current_date: 'string',
+        current_time: 'string',
+        current_filters: {
+          class: 'string',
+          student: 'string',
+          date: 'string',
+          status: 'string'
+        },
+        action: 'string',
+        context: {
+          school_id: 'string',
+          user_timezone: 'string',
+          session_id: 'string'
+        }
+      }
+    },
+    {
+      name: 'time-period-selected',
+      label: { en: 'Time Period Selected', de: 'Zeitraum ausgewählt' },
+      event: {
+        timestamp: 'string',
+        current_time: 'string',
+        duration_type: 'string',
+        action: 'string',
+        context: {
+          is_editing: 'boolean',
+          student_name: 'string',
+          selected_date: 'string',
+          is_multiple_days: 'boolean'
+        }
       }
     },
     {
