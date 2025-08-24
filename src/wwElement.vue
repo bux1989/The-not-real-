@@ -40,10 +40,11 @@
         </div>
         
         <!-- Add Button -->
-        <button 
-          v-if="content.showAddButton && content.allowAdd"
+        <button
+          v-if="content.showAddButton !== false && content.allowAdd !== false"
           class="add-btn primary-btn"
           @click="handleAddEntry"
+          @click.capture="() => console.log('Add button clicked', { showAddButton: content.showAddButton, allowAdd: content.allowAdd, showAddEditModal })"
         >
           <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
             <line x1="12" y1="5" x2="12" y2="19"/>
@@ -1038,9 +1039,17 @@ export default {
     },
     
     handleAddEntry() {
+      console.log('handleAddEntry called', {
+        showAddEditModal: this.showAddEditModal,
+        allowAdd: this.content.allowAdd,
+        showAddButton: this.content.showAddButton
+      });
+
       this.editingEntry = null; // null means adding new entry
       this.initializeForm();
       this.showAddEditModal = true;
+
+      console.log('Modal should be open now:', this.showAddEditModal);
 
       const now = new Date();
       this.emitEvent('add-absence', {
