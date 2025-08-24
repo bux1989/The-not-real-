@@ -1052,7 +1052,7 @@ export default {
       console.log('Modal should be open now:', this.showAddEditModal);
 
       const now = new Date();
-      this.emitEvent('add-absence', {
+      const eventData = {
         timestamp: now.toISOString(),
         current_date: now.toLocaleDateString('de-DE'),
         current_time: now.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }),
@@ -1068,6 +1068,14 @@ export default {
           user_timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
           session_id: Date.now().toString()
         }
+      };
+
+      console.log('Emitting add-absence event with trigger-event format:', eventData);
+
+      // Use WeWeb trigger-event format
+      this.$emit('trigger-event', {
+        name: 'add-absence',
+        event: eventData
       });
     },
     
@@ -1132,33 +1140,32 @@ export default {
         editingEntry: this.editingEntry
       });
 
-      const eventData = this.editingEntry ? {
-        action: 'edit',
-        id: this.editingEntry.id,
-        data: entryData
-      } : {
-        action: 'add',
-        data: entryData
+      // Ensure data matches triggerEvents structure from ww-config.js
+      const eventData = {
+        action: this.editingEntry ? 'edit' : 'add',
+        id: this.editingEntry ? this.editingEntry.id : undefined,
+        data: {
+          student_id: entryData.student_id,
+          school_id: entryData.school_id,
+          start_date: entryData.start_date,
+          end_date: entryData.end_date,
+          duration: entryData.duration,
+          time_range: entryData.time_range,
+          status: entryData.status,
+          reason: entryData.reason,
+          has_attachment: entryData.has_attachment
+        }
       };
 
-      console.log('About to emit save-entry event:', eventData);
+      console.log('Emitting save-entry event with WeWeb format:', eventData);
 
-      if (this.editingEntry) {
-        // Edit existing entry
-        this.emitEvent('save-entry', {
-          action: 'edit',
-          id: this.editingEntry.id,
-          data: entryData
-        });
-      } else {
-        // Add new entry
-        this.emitEvent('save-entry', {
-          action: 'add',
-          data: entryData
-        });
-      }
+      // Use WeWeb trigger-event format
+      this.$emit('trigger-event', {
+        name: 'save-entry',
+        event: eventData
+      });
 
-      console.log('save-entry event emitted, closing modal');
+      console.log('save-entry event emitted via trigger-event, closing modal');
       this.closeAddEditModal();
     },
 
@@ -1357,7 +1364,12 @@ export default {
     // WeWeb event emission
     emitEvent(eventName, eventData) {
       console.log(`Emitting WeWeb event "${eventName}":`, eventData);
-      this.$emit(eventName, eventData);
+
+      // Use trigger-event for WeWeb
+      this.$emit('trigger-event', {
+        name: eventName,
+        event: eventData
+      });
     },
     
     // Mock data for development/fallback
