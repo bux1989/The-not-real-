@@ -15,15 +15,21 @@ export default {
   },
   
   properties: {
-    // ===== DATA SOURCE CONFIGURATION =====
-    supabaseTable: {
-      label: { en: 'Data Source Table/View', de: 'Datenquelle Tabelle/View' },
-      type: 'Text',
-      defaultValue: 'vw_attendance_dashboard',
+    // ===== DATA BINDING CONFIGURATION =====
+    attendanceData: {
+      label: { en: 'Attendance Data', de: 'Fehlzeiten Daten' },
+      type: 'Array',
+      defaultValue: [],
       section: 'data',
-      options: {
-        placeholder: 'e.g. vw_attendance_dashboard'
-      }
+      bindable: true
+    },
+    
+    classesData: {
+      label: { en: 'Classes Data', de: 'Klassen Daten' },
+      type: 'Array', 
+      defaultValue: [],
+      section: 'data',
+      bindable: true
     },
     
     schoolId: {
@@ -31,30 +37,10 @@ export default {
       type: 'Text',
       defaultValue: '',
       section: 'data',
+      bindable: true,
       options: {
         placeholder: 'UUID of the school'
       }
-    },
-    
-    attendanceCollection: {
-      label: { en: 'Attendance Collection', de: 'Fehlzeiten Collection' },
-      type: 'Query',
-      defaultValue: '',
-      section: 'data'
-    },
-    
-    classesCollection: {
-      label: { en: 'Classes Collection', de: 'Klassen Collection' },
-      type: 'Query',
-      defaultValue: '',
-      section: 'data'
-    },
-    
-    studentsCollection: {
-      label: { en: 'Students Collection', de: 'Schüler Collection' },
-      type: 'Query',
-      defaultValue: '',
-      section: 'data'
     },
     
     // ===== HEADER CONFIGURATION =====
@@ -293,146 +279,42 @@ export default {
     statusColorSick: {
       label: { en: 'Sick Status Color', de: 'Krankgemeldet Farbe' },
       type: 'Color',
-      defaultValue: '#22c55e',
+      defaultValue: '#16a34a',
       section: 'statusColors'
     },
     
     statusColorUnexcused: {
       label: { en: 'Unexcused Status Color', de: 'Unentschuldigt Farbe' },
       type: 'Color',
-      defaultValue: '#ef4444',
+      defaultValue: '#dc2626',
       section: 'statusColors'
     },
     
     statusColorExcused: {
       label: { en: 'Excused Status Color', de: 'Beurlaubt Farbe' },
       type: 'Color',
-      defaultValue: '#3b82f6',
+      defaultValue: '#2563eb',
       section: 'statusColors'
     },
     
     statusColorLate: {
       label: { en: 'Late Status Color', de: 'Verspätet Farbe' },
       type: 'Color',
-      defaultValue: '#f59e0b',
+      defaultValue: '#ca8a04',
       section: 'statusColors'
     },
     
     statusColorUnclear: {
       label: { en: 'Unclear Status Color', de: 'Ungeklärt Farbe' },
       type: 'Color',
-      defaultValue: '#6b7280',
+      defaultValue: '#64748b',
       section: 'statusColors'
-    },
-    
-    // ===== EXPORT CONFIGURATION =====
-    exportFormats: {
-      label: { en: 'Available Export Formats', de: 'Verfügbare Export-Formate' },
-      type: 'TextSelect',
-      options: {
-        options: [
-          { value: 'csv,xlsx,pdf', label: { en: 'All Formats', de: 'Alle Formate' } },
-          { value: 'csv,xlsx', label: { en: 'CSV & Excel', de: 'CSV & Excel' } },
-          { value: 'csv', label: { en: 'CSV Only', de: 'Nur CSV' } },
-          { value: 'xlsx', label: { en: 'Excel Only', de: 'Nur Excel' } },
-          { value: 'pdf', label: { en: 'PDF Only', de: 'Nur PDF' } }
-        ]
-      },
-      defaultValue: 'csv,xlsx,pdf',
-      section: 'export'
-    },
-    
-    exportFilename: {
-      label: { en: 'Export Filename Prefix', de: 'Export Dateiname-Präfix' },
-      type: 'Text',
-      defaultValue: 'fehlzeiten',
-      section: 'export',
-      options: {
-        placeholder: 'e.g. fehlzeiten, attendance'
-      }
-    },
-    
-    // ===== LANGUAGE CONFIGURATION =====
-    language: {
-      label: { en: 'Language', de: 'Sprache' },
-      type: 'TextSelect',
-      options: {
-        options: [
-          { value: 'de', label: { en: 'German', de: 'Deutsch' } },
-          { value: 'en', label: { en: 'English', de: 'Englisch' } }
-        ]
-      },
-      defaultValue: 'de',
-      section: 'language'
-    },
-    
-    // ===== RESPONSIVE CONFIGURATION =====
-    hideFiltersOnMobile: {
-      label: { en: 'Hide Filters on Mobile', de: 'Filter auf Mobil ausblenden' },
-      type: 'OnOff',
-      defaultValue: false,
-      section: 'responsive'
-    },
-    
-    mobileColumnsToShow: {
-      label: { en: 'Mobile Columns Limit', de: 'Mobil Spalten-Limit' },
-      type: 'Number',
-      defaultValue: 3,
-      section: 'responsive',
-      options: {
-        min: 2,
-        max: 5,
-        step: 1
-      }
-    },
-    
-    // ===== MODAL CONFIGURATION =====
-    detailModalTitle: {
-      label: { en: 'Detail Modal Title', de: 'Detail Modal Titel' },
-      type: 'Text',
-      defaultValue: 'Fehlzeit Details',
-      section: 'modal'
-    },
-    
-    showDetailModal: {
-      label: { en: 'Show Detail Modal on Row Click', de: 'Detail Modal beim Zeilen-Klick' },
-      type: 'OnOff',
-      defaultValue: true,
-      section: 'modal'
-    },
-    
-    // ===== ADVANCED CONFIGURATION =====
-    enableRealtime: {
-      label: { en: 'Enable Realtime Updates', de: 'Echtzeit-Updates aktivieren' },
-      type: 'OnOff',
-      defaultValue: true,
-      section: 'advanced'
-    },
-    
-    debugMode: {
-      label: { en: 'Debug Mode', de: 'Debug Modus' },
-      type: 'OnOff',
-      defaultValue: false,
-      section: 'advanced'
-    },
-    
-    customCSSClasses: {
-      label: { en: 'Custom CSS Classes', de: 'Benutzerdefinierte CSS-Klassen' },
-      type: 'Text',
-      defaultValue: '',
-      section: 'advanced',
-      options: {
-        placeholder: 'space-separated class names'
-      }
     }
   },
   
   options: {
     autoByContent: true,
     sizable: true,
-    hyperlink: false,
-    // WeWeb-specific options
-    useClassicEditor: false,
-    responsive: true
+    hyperlink: false
   }
 };
