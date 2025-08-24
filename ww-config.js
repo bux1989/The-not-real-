@@ -26,7 +26,15 @@ export default {
     
     classesData: {
       label: { en: 'Classes Data', de: 'Klassen Daten' },
-      type: 'Array', 
+      type: 'Array',
+      defaultValue: [],
+      section: 'data',
+      bindable: true
+    },
+
+    studentsData: {
+      label: { en: 'Students Data', de: 'Schüler Daten' },
+      type: 'Array',
       defaultValue: [],
       section: 'data',
       bindable: true
