@@ -1070,13 +1070,8 @@ export default {
         }
       };
 
-      console.log('Emitting add-absence event with trigger-event format:', eventData);
-
-      // Use WeWeb trigger-event format
-      this.$emit('trigger-event', {
-        name: 'add-absence',
-        event: eventData
-      });
+      console.log('Emitting add-absence event:', eventData);
+      this.emitEvent('add-absence', eventData);
     },
     
     handleEditEntry() {
@@ -1157,13 +1152,8 @@ export default {
         }
       };
 
-      console.log('Emitting save-entry event with WeWeb format:', eventData);
-
-      // Use WeWeb trigger-event format
-      this.$emit('trigger-event', {
-        name: 'save-entry',
-        event: eventData
-      });
+      console.log('Emitting save-entry event:', eventData);
+      this.emitEvent('save-entry', eventData);
 
       console.log('save-entry event emitted via trigger-event, closing modal');
       this.closeAddEditModal();
@@ -1176,30 +1166,38 @@ export default {
           studentId: !!this.formData.studentId,
           startDate: !!this.formData.startDate,
           status: !!this.formData.status
-        }
+        },
+        isEditing: !!this.editingEntry,
+        schoolId: this.content.schoolId
       });
 
       // Validate required fields
       if (!this.formData.studentId || !this.formData.startDate || !this.formData.status) {
-        console.log('Validation failed - missing required fields');
+        console.log('Validation failed - missing required fields:', {
+          studentId: this.formData.studentId,
+          startDate: this.formData.startDate,
+          status: this.formData.status
+        });
         alert('Bitte füllen Sie alle Pflichtfelder aus.');
         return;
       }
 
-      // Build the entry data
+      // Build the entry data to match triggerEvents structure
       const entryData = {
         student_id: this.formData.studentId,
-        school_id: this.content.schoolId, // Include school_id for Supabase functions
+        school_id: this.content.schoolId || '', // Include school_id for Supabase functions
         start_date: this.formData.startDate,
         end_date: this.formData.endDate || this.formData.startDate,
         duration: this.formData.duration,
         time_range: this.getTimeRange(),
         status: this.formData.status,
-        reason: this.formData.reason,
-        has_attachment: this.formData.hasAttachment
+        reason: this.formData.reason || '',
+        has_attachment: this.formData.hasAttachment || false
       };
 
-      console.log('About to call handleSaveEntry with:', entryData);
+      console.log('Built entryData for save:', entryData);
+      console.log('About to call handleSaveEntry...');
+
       this.handleSaveEntry(entryData);
     },
 
@@ -1364,12 +1362,7 @@ export default {
     // WeWeb event emission
     emitEvent(eventName, eventData) {
       console.log(`Emitting WeWeb event "${eventName}":`, eventData);
-
-      // Use trigger-event for WeWeb
-      this.$emit('trigger-event', {
-        name: eventName,
-        event: eventData
-      });
+      this.$emit(eventName, eventData);
     },
     
     // Mock data for development/fallback
