@@ -430,6 +430,157 @@
         </div>
       </div>
     </div>
+
+    <!-- Add/Edit Modal -->
+    <div v-if="showAddEditModal" class="modal-overlay" @click="closeAddEditModal">
+      <div class="modal-content add-edit-modal" @click.stop>
+        <div class="modal-header">
+          <h2>{{ editingEntry ? 'Fehlzeit bearbeiten' : 'Neue Fehlzeit eintragen' }}</h2>
+          <button class="close-btn" @click="closeAddEditModal">×</button>
+        </div>
+
+        <div class="modal-body">
+          <form @submit.prevent="handleFormSubmit" class="add-edit-form">
+            <!-- Student Selection -->
+            <div class="form-group">
+              <label for="student">Schüler*in *</label>
+              <select
+                v-model="formData.studentId"
+                id="student"
+                class="form-input"
+                required
+              >
+                <option value="">Schüler*in auswählen...</option>
+                <option
+                  v-for="student in allStudents"
+                  :key="student.id"
+                  :value="student.id"
+                >
+                  {{ student.name }} ({{ student.class }})
+                </option>
+              </select>
+            </div>
+
+            <!-- Date Range -->
+            <div class="form-row">
+              <div class="form-group">
+                <label for="startDate">Startdatum *</label>
+                <input
+                  v-model="formData.startDate"
+                  type="date"
+                  id="startDate"
+                  class="form-input"
+                  required
+                />
+              </div>
+              <div class="form-group">
+                <label for="endDate">Enddatum</label>
+                <input
+                  v-model="formData.endDate"
+                  type="date"
+                  id="endDate"
+                  class="form-input"
+                />
+              </div>
+            </div>
+
+            <!-- Time Range -->
+            <div class="form-group">
+              <label>Dauer</label>
+              <div class="radio-group">
+                <label class="radio-option">
+                  <input
+                    v-model="formData.duration"
+                    type="radio"
+                    value="Ganzer Tag"
+                  />
+                  <span>Ganzer Tag</span>
+                </label>
+                <label class="radio-option">
+                  <input
+                    v-model="formData.duration"
+                    type="radio"
+                    value="Zeitfenster"
+                  />
+                  <span>Zeitfenster</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Time Range Inputs -->
+            <div v-if="formData.duration === 'Zeitfenster'" class="form-row">
+              <div class="form-group">
+                <label for="startTime">Startzeit</label>
+                <input
+                  v-model="formData.startTime"
+                  type="time"
+                  id="startTime"
+                  class="form-input"
+                />
+              </div>
+              <div class="form-group">
+                <label for="endTime">Endzeit</label>
+                <input
+                  v-model="formData.endTime"
+                  type="time"
+                  id="endTime"
+                  class="form-input"
+                />
+              </div>
+            </div>
+
+            <!-- Status -->
+            <div class="form-group">
+              <label for="status">Status *</label>
+              <select
+                v-model="formData.status"
+                id="status"
+                class="form-input"
+                required
+              >
+                <option value="krankgemeldet">Krankgemeldet</option>
+                <option value="unentschuldigt">Unentschuldigt</option>
+                <option value="beurlaubt">Beurlaubt</option>
+                <option value="ungeklärt">Ungeklärt</option>
+                <option value="verspätet">Verspätet</option>
+              </select>
+            </div>
+
+            <!-- Reason -->
+            <div class="form-group">
+              <label for="reason">Grund</label>
+              <textarea
+                v-model="formData.reason"
+                id="reason"
+                class="form-input"
+                rows="3"
+                placeholder="Grund für die Fehlzeit..."
+              ></textarea>
+            </div>
+
+            <!-- Attachment -->
+            <div class="form-group">
+              <label class="checkbox-option">
+                <input
+                  v-model="formData.hasAttachment"
+                  type="checkbox"
+                />
+                <span>Nachweis vorhanden</span>
+              </label>
+            </div>
+          </form>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="outline-btn" @click="closeAddEditModal">
+            Abbrechen
+          </button>
+          <button type="button" class="primary-btn" @click="handleFormSubmit">
+            {{ editingEntry ? 'Änderungen speichern' : 'Fehlzeit eintragen' }}
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -471,7 +622,9 @@ export default {
       // UI state
       showExportMenu: false,
       showDetailModal: false,
+      showAddEditModal: false,
       selectedEntry: null,
+      editingEntry: null,
       currentPage: 1,
       
       // Loading state
@@ -482,7 +635,20 @@ export default {
       lastUpdate: null,
 
       // Debug mode
-      debugInfo: {}
+      debugInfo: {},
+
+      // Form data for add/edit modal
+      formData: {
+        studentId: '',
+        startDate: '',
+        endDate: '',
+        duration: 'Ganzer Tag',
+        startTime: '',
+        endTime: '',
+        status: 'krankgemeldet',
+        reason: '',
+        hasAttachment: false
+      }
     };
   },
   
@@ -616,6 +782,37 @@ export default {
     availableExportFormats() {
       const formats = this.content.exportFormats || 'csv,xlsx,pdf';
       return formats.split(',').map(f => f.trim());
+    },
+
+    allStudents() {
+      // Generate student list from existing data or use mock data
+      const students = [];
+      const seenStudents = new Set();
+
+      this.allData.forEach(entry => {
+        const studentKey = `${entry.first_name} ${entry.last_name}-${entry.student_class}`;
+        if (!seenStudents.has(studentKey)) {
+          students.push({
+            id: entry.student_id || `${entry.first_name}-${entry.last_name}-${entry.student_class}`,
+            name: `${entry.first_name} ${entry.last_name}`,
+            class: entry.student_class
+          });
+          seenStudents.add(studentKey);
+        }
+      });
+
+      // If no students from data, provide some defaults
+      if (students.length === 0) {
+        return [
+          { id: '1', name: 'Leon Schmidt', class: '5b' },
+          { id: '2', name: 'Anna Lange', class: '5b' },
+          { id: '3', name: 'Max Müller', class: '7c' },
+          { id: '4', name: 'Mara Klein', class: '5b' },
+          { id: '5', name: 'Emma Taylor', class: '6a' }
+        ];
+      }
+
+      return students.sort((a, b) => a.name.localeCompare(b.name));
     }
   },
   
@@ -808,6 +1005,10 @@ export default {
     },
     
     handleAddEntry() {
+      this.editingEntry = null; // null means adding new entry
+      this.initializeForm();
+      this.showAddEditModal = true;
+
       this.emitEvent('add-absence', {
         timestamp: new Date().toISOString()
       });
@@ -815,14 +1016,18 @@ export default {
     
     handleEditEntry() {
       if (!this.selectedEntry) return;
-      
+
+      this.editingEntry = this.selectedEntry; // set the entry to edit
+      this.initializeForm();
+      this.showAddEditModal = true;
+
       this.emitEvent('edit-absence', {
         absenceId: this.selectedEntry.id,
         studentName: this.selectedEntry.student_name,
         studentClass: this.selectedEntry.student_class,
         currentData: this.selectedEntry
       });
-      
+
       this.closeDetailModal();
     },
     
@@ -856,7 +1061,95 @@ export default {
       this.showDetailModal = false;
       this.selectedEntry = null;
     },
-    
+
+    closeAddEditModal() {
+      this.showAddEditModal = false;
+      this.editingEntry = null;
+    },
+
+    handleSaveEntry(entryData) {
+      if (this.editingEntry) {
+        // Edit existing entry
+        this.emitEvent('save-entry', {
+          action: 'edit',
+          id: this.editingEntry.id,
+          data: entryData
+        });
+      } else {
+        // Add new entry
+        this.emitEvent('save-entry', {
+          action: 'add',
+          data: entryData
+        });
+      }
+
+      this.closeAddEditModal();
+    },
+
+    handleFormSubmit() {
+      // Validate required fields
+      if (!this.formData.studentId || !this.formData.startDate || !this.formData.status) {
+        alert('Bitte füllen Sie alle Pflichtfelder aus.');
+        return;
+      }
+
+      // Build the entry data
+      const entryData = {
+        student_id: this.formData.studentId,
+        start_date: this.formData.startDate,
+        end_date: this.formData.endDate || this.formData.startDate,
+        duration: this.formData.duration,
+        time_range: this.getTimeRange(),
+        status: this.formData.status,
+        reason: this.formData.reason,
+        has_attachment: this.formData.hasAttachment
+      };
+
+      this.handleSaveEntry(entryData);
+    },
+
+    getTimeRange() {
+      if (this.formData.duration === 'Ganzer Tag') {
+        return null;
+      }
+
+      if (this.formData.startTime && this.formData.endTime) {
+        return `${this.formData.startTime}–${this.formData.endTime}`;
+      }
+
+      return null;
+    },
+
+    initializeForm() {
+      if (this.editingEntry) {
+        // Pre-fill form with existing data
+        this.formData = {
+          studentId: this.editingEntry.student_id || '',
+          startDate: this.editingEntry.date ? this.parseGermanDate(this.editingEntry.date).toISOString().split('T')[0] : '',
+          endDate: this.editingEntry.end_date ? this.parseGermanDate(this.editingEntry.end_date).toISOString().split('T')[0] : '',
+          duration: this.editingEntry.duration || 'Ganzer Tag',
+          startTime: this.editingEntry.date_range ? this.editingEntry.date_range.split('–')[0] : '',
+          endTime: this.editingEntry.date_range ? this.editingEntry.date_range.split('–')[1] : '',
+          status: this.editingEntry.status || 'krankgemeldet',
+          reason: this.editingEntry.reason || '',
+          hasAttachment: this.editingEntry.has_attachment || false
+        };
+      } else {
+        // Reset form for new entry
+        this.formData = {
+          studentId: '',
+          startDate: this.getCurrentDate(),
+          endDate: '',
+          duration: 'Ganzer Tag',
+          startTime: '',
+          endTime: '',
+          status: 'krankgemeldet',
+          reason: '',
+          hasAttachment: false
+        };
+      }
+    },
+
     // Export methods
     toggleExportMenu() {
       this.showExportMenu = !this.showExportMenu;
@@ -1800,9 +2093,98 @@ export default {
   .dashboard-title {
     font-size: 24px;
   }
-  
+
   .fehlzeiten-dashboard {
     padding: 16px;
+  }
+}
+
+/* Add/Edit Modal Specific Styles */
+.add-edit-modal {
+  max-width: 700px;
+}
+
+.add-edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.form-group label {
+  font-weight: 500;
+  color: #374151;
+  font-size: 14px;
+}
+
+.form-input {
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  background: white;
+  transition: all 0.2s;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.radio-group {
+  display: flex;
+  gap: 16px;
+}
+
+.radio-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.radio-option input[type="radio"] {
+  margin: 0;
+}
+
+.checkbox-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.checkbox-option input[type="checkbox"] {
+  margin: 0;
+}
+
+textarea.form-input {
+  resize: vertical;
+  min-height: 80px;
+  font-family: inherit;
+}
+
+@media (max-width: 640px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .add-edit-modal {
+    max-width: 95%;
   }
 }
 </style>
