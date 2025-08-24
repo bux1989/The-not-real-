@@ -26,7 +26,15 @@ export default {
     
     classesData: {
       label: { en: 'Classes Data', de: 'Klassen Daten' },
-      type: 'Array', 
+      type: 'Array',
+      defaultValue: [],
+      section: 'data',
+      bindable: true
+    },
+
+    studentsData: {
+      label: { en: 'Students Data', de: 'Schüler Daten' },
+      type: 'Array',
       defaultValue: [],
       section: 'data',
       bindable: true
@@ -330,45 +338,109 @@ export default {
   options: {
     autoByContent: true,
     sizable: true,
-    hyperlink: false
+    hyperlink: false,
+    useClassicEditor: false,
+    responsive: true
   },
 
-  actions: [
+  triggerEvents: [
     {
+      name: 'add-absence',
       label: { en: 'Add Absence', de: 'Fehlzeit hinzufügen' },
-      action: 'add-absence'
+      event: {
+        timestamp: 'string'
+      }
     },
     {
+      name: 'save-entry',
       label: { en: 'Save Entry', de: 'Eintrag speichern' },
-      action: 'save-entry'
+      event: {
+        action: 'string',
+        id: 'string',
+        data: {
+          student_id: 'string',
+          school_id: 'string',
+          start_date: 'string',
+          end_date: 'string',
+          duration: 'string',
+          time_range: 'string',
+          status: 'string',
+          reason: 'string',
+          has_attachment: 'boolean'
+        }
+      }
     },
     {
+      name: 'edit-absence',
       label: { en: 'Edit Absence', de: 'Fehlzeit bearbeiten' },
-      action: 'edit-absence'
+      event: {
+        absenceId: 'string',
+        studentName: 'string',
+        studentClass: 'string',
+        currentData: 'object'
+      }
     },
     {
+      name: 'delete-absence',
       label: { en: 'Delete Absence', de: 'Fehlzeit löschen' },
-      action: 'delete-absence'
+      event: {
+        absenceId: 'string',
+        school_id: 'string',
+        studentName: 'string',
+        confirmed: 'boolean'
+      }
     },
     {
+      name: 'refresh-data',
       label: { en: 'Refresh Data', de: 'Daten aktualisieren' },
-      action: 'refresh-data'
+      event: {
+        school_id: 'string',
+        class_filter: 'string',
+        student_search: 'string',
+        status_filter: 'string',
+        date_filter: 'string'
+      }
     },
     {
+      name: 'filters-changed',
       label: { en: 'Filters Changed', de: 'Filter geändert' },
-      action: 'filters-changed'
+      event: {
+        filters: {
+          class: 'string',
+          student: 'string',
+          date: 'string',
+          status: 'string'
+        },
+        resultCount: 'number'
+      }
     },
     {
+      name: 'row-selected',
       label: { en: 'Row Selected', de: 'Zeile ausgewählt' },
-      action: 'row-selected'
+      event: {
+        selectedEntry: 'object',
+        studentId: 'string',
+        absenceId: 'string'
+      }
     },
     {
+      name: 'export-data',
       label: { en: 'Export Data', de: 'Daten exportieren' },
-      action: 'export-data'
+      event: {
+        format: 'string',
+        dataCount: 'number',
+        filters: 'object',
+        data: 'array'
+      }
     },
     {
+      name: 'data-loaded',
       label: { en: 'Data Loaded', de: 'Daten geladen' },
-      action: 'data-loaded'
+      event: {
+        count: 'number',
+        totalCount: 'number',
+        timestamp: 'string'
+      }
     }
   ]
 };
