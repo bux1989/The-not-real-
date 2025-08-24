@@ -671,11 +671,33 @@ export default {
     },
     
     availableClasses() {
-      // Use bound class data from WeWeb, fallback to default classes
+      // Use bound class data from WeWeb first
       const boundClasses = this.content.classesData;
       if (Array.isArray(boundClasses) && boundClasses.length > 0) {
         return boundClasses;
       }
+
+      // Extract classes from student data if available
+      const boundStudents = this.content.studentsData;
+      if (Array.isArray(boundStudents) && boundStudents.length > 0) {
+        const classMap = new Map();
+        boundStudents.forEach(student => {
+          if (student.class_id && student.class_name) {
+            classMap.set(student.class_id, {
+              class_id: student.class_id,
+              class_name: student.class_name,
+              grade_level: student.grade_level,
+              student_count: (classMap.get(student.class_id)?.student_count || 0) + 1
+            });
+          }
+        });
+
+        if (classMap.size > 0) {
+          return Array.from(classMap.values()).sort((a, b) => a.class_name.localeCompare(b.class_name));
+        }
+      }
+
+      // Fallback to default classes
       return this.getDefaultClasses();
     },
     
@@ -785,7 +807,18 @@ export default {
     },
 
     allStudents() {
-      // Generate student list from existing data or use mock data
+      // Use bound student data from WeWeb (user's existing student collection)
+      const boundStudents = this.content.studentsData;
+      if (Array.isArray(boundStudents) && boundStudents.length > 0) {
+        return boundStudents.map(student => ({
+          id: student.profile_id,
+          name: `${student.first_name} ${student.last_name}`,
+          class: student.class_name,
+          grade_level: student.grade_level
+        })).sort((a, b) => a.name.localeCompare(b.name));
+      }
+
+      // Fallback: Extract from absence data if no student collection bound
       const students = [];
       const seenStudents = new Set();
 
@@ -801,7 +834,7 @@ export default {
         }
       });
 
-      // If no students from data, provide some defaults
+      // If no students from either source, provide defaults
       if (students.length === 0) {
         return [
           { id: '1', name: 'Leon Schmidt', class: '5b' },
@@ -904,7 +937,7 @@ export default {
 
         // Emit event for WeWeb to refresh data with current filters
         this.emitEvent('refresh-data', {
-          school_id: this.content.schoolId,
+          school_id: this.content.schoolId || '', // Ensure school_id is included
           class_filter: this.filters.class || 'alle',
           student_search: this.filters.student || '',
           status_filter: this.filters.status || 'alle',
@@ -1033,14 +1066,15 @@ export default {
     
     handleDeleteEntry() {
       if (!this.selectedEntry) return;
-      
+
       if (confirm('Fehlzeit wirklich löschen?')) {
         this.emitEvent('delete-absence', {
           absenceId: this.selectedEntry.id,
+          school_id: this.content.schoolId, // Include school_id for Supabase functions
           studentName: this.selectedEntry.student_name,
           confirmed: true
         });
-        
+
         this.closeDetailModal();
       }
     },
@@ -1096,6 +1130,7 @@ export default {
       // Build the entry data
       const entryData = {
         student_id: this.formData.studentId,
+        school_id: this.content.schoolId, // Include school_id for Supabase functions
         start_date: this.formData.startDate,
         end_date: this.formData.endDate || this.formData.startDate,
         duration: this.formData.duration,
