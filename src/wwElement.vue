@@ -1042,8 +1042,23 @@ export default {
       this.initializeForm();
       this.showAddEditModal = true;
 
+      const now = new Date();
       this.emitEvent('add-absence', {
-        timestamp: new Date().toISOString()
+        timestamp: now.toISOString(),
+        current_date: now.toLocaleDateString('de-DE'),
+        current_time: now.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }),
+        current_filters: {
+          class: this.filters.class || 'alle',
+          student: this.filters.student || '',
+          date: this.filters.date || this.getCurrentDate(),
+          status: this.filters.status || 'alle'
+        },
+        action: 'open_add_modal',
+        context: {
+          school_id: this.content.schoolId || '',
+          user_timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          session_id: Date.now().toString()
+        }
       });
     },
     
