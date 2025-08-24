@@ -1356,35 +1356,8 @@ export default {
     
     // WeWeb event emission
     emitEvent(eventName, eventData) {
-      console.log(`Emitting event "${eventName}":`, eventData);
-
-      // Vue emit for component communication
+      console.log(`Emitting WeWeb event "${eventName}":`, eventData);
       this.$emit(eventName, eventData);
-
-      // WeWeb-specific event emission
-      if (typeof window !== 'undefined' && window.wwLib) {
-        console.log('Emitting via wwLib.wwEvent.emit');
-        window.wwLib.wwEvent.emit(eventName, eventData);
-      }
-
-      // Alternative: trigger custom DOM event for WeWeb
-      if (typeof window !== 'undefined') {
-        const customEvent = new CustomEvent(`ww-${eventName}`, {
-          detail: eventData,
-          bubbles: true
-        });
-        console.log('Dispatching custom DOM event:', `ww-${eventName}`);
-        document.dispatchEvent(customEvent);
-      }
-
-      // WeWeb component event (if wwEditor is available)
-      if (this.wwEditorState) {
-        console.log('WeWeb editor state available, emitting component event');
-        this.$emit('trigger-event', {
-          eventName,
-          eventData
-        });
-      }
     },
     
     // Mock data for development/fallback
