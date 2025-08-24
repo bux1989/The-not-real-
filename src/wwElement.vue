@@ -256,8 +256,8 @@
             v-for="entry in paginatedData"
             :key="entry.id"
             class="table-row"
-            :class="{ 'clickable': content.clickableRows }"
-            @click="content.clickableRows ? handleRowClick(entry) : null"
+:class="{ 'clickable': content.clickableRows !== false }"
+@click="handleRowClick(entry)"
           >
             <td>
               <div class="student-name-cell">
@@ -794,11 +794,12 @@ export default {
     
     // Event handlers
     handleRowClick(entry) {
-      if (!this.content.showDetailModal) return;
-      
+      // Always show modal unless explicitly disabled
+      if (this.content.showDetailModal === false) return;
+
       this.selectedEntry = entry;
       this.showDetailModal = true;
-      
+
       this.emitEvent('row-selected', {
         selectedEntry: entry,
         studentId: entry.student_id,
@@ -1603,11 +1604,12 @@ export default {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.6);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 100;
+  z-index: 9999;
+  backdrop-filter: blur(4px);
 }
 
 .modal-content {
