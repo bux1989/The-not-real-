@@ -1303,13 +1303,7 @@ export default {
     
     // WeWeb event emission
     emitEvent(eventName, eventData) {
-      this.$emit('trigger-event', {
-        name: eventName,
-        event: {
-          type: eventName,
-          ...eventData
-        }
-      });
+      this.$emit(eventName, eventData);
     },
     
     // Mock data for development/fallback
