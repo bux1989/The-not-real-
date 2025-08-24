@@ -1126,6 +1126,23 @@ export default {
     },
 
     handleSaveEntry(entryData) {
+      console.log('handleSaveEntry called', {
+        entryData,
+        isEditing: !!this.editingEntry,
+        editingEntry: this.editingEntry
+      });
+
+      const eventData = this.editingEntry ? {
+        action: 'edit',
+        id: this.editingEntry.id,
+        data: entryData
+      } : {
+        action: 'add',
+        data: entryData
+      };
+
+      console.log('About to emit save-entry event:', eventData);
+
       if (this.editingEntry) {
         // Edit existing entry
         this.emitEvent('save-entry', {
@@ -1141,6 +1158,7 @@ export default {
         });
       }
 
+      console.log('save-entry event emitted, closing modal');
       this.closeAddEditModal();
     },
 
@@ -1338,7 +1356,35 @@ export default {
     
     // WeWeb event emission
     emitEvent(eventName, eventData) {
+      console.log(`Emitting event "${eventName}":`, eventData);
+
+      // Vue emit for component communication
       this.$emit(eventName, eventData);
+
+      // WeWeb-specific event emission
+      if (typeof window !== 'undefined' && window.wwLib) {
+        console.log('Emitting via wwLib.wwEvent.emit');
+        window.wwLib.wwEvent.emit(eventName, eventData);
+      }
+
+      // Alternative: trigger custom DOM event for WeWeb
+      if (typeof window !== 'undefined') {
+        const customEvent = new CustomEvent(`ww-${eventName}`, {
+          detail: eventData,
+          bubbles: true
+        });
+        console.log('Dispatching custom DOM event:', `ww-${eventName}`);
+        document.dispatchEvent(customEvent);
+      }
+
+      // WeWeb component event (if wwEditor is available)
+      if (this.wwEditorState) {
+        console.log('WeWeb editor state available, emitting component event');
+        this.$emit('trigger-event', {
+          eventName,
+          eventData
+        });
+      }
     },
     
     // Mock data for development/fallback
