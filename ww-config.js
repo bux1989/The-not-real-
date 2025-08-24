@@ -309,6 +309,21 @@ export default {
       type: 'Color',
       defaultValue: '#64748b',
       section: 'statusColors'
+    },
+
+    // ===== MODAL CONFIGURATION =====
+    detailModalTitle: {
+      label: { en: 'Detail Modal Title', de: 'Detail Modal Titel' },
+      type: 'Text',
+      defaultValue: 'Fehlzeit Details',
+      section: 'modal'
+    },
+
+    showDetailModal: {
+      label: { en: 'Show Detail Modal on Row Click', de: 'Detail Modal beim Zeilen-Klick' },
+      type: 'OnOff',
+      defaultValue: true,
+      section: 'modal'
     }
   },
   
@@ -316,5 +331,103 @@ export default {
     autoByContent: true,
     sizable: true,
     hyperlink: false
+  },
+
+  triggers: {
+    'add-absence': {
+      label: { en: 'Add Absence', de: 'Fehlzeit hinzufügen' },
+      event: {
+        timestamp: 'string'
+      }
+    },
+
+    'save-entry': {
+      label: { en: 'Save Entry', de: 'Eintrag speichern' },
+      event: {
+        action: 'string', // 'add' or 'edit'
+        id: 'string',
+        data: {
+          student_id: 'string',
+          start_date: 'string',
+          end_date: 'string',
+          duration: 'string',
+          time_range: 'string',
+          status: 'string',
+          reason: 'string',
+          has_attachment: 'boolean'
+        }
+      }
+    },
+
+    'edit-absence': {
+      label: { en: 'Edit Absence', de: 'Fehlzeit bearbeiten' },
+      event: {
+        absenceId: 'string',
+        studentName: 'string',
+        studentClass: 'string',
+        currentData: 'object'
+      }
+    },
+
+    'delete-absence': {
+      label: { en: 'Delete Absence', de: 'Fehlzeit löschen' },
+      event: {
+        absenceId: 'string',
+        studentName: 'string',
+        confirmed: 'boolean'
+      }
+    },
+
+    'refresh-data': {
+      label: { en: 'Refresh Data', de: 'Daten aktualisieren' },
+      event: {
+        school_id: 'string',
+        class_filter: 'string',
+        student_search: 'string',
+        status_filter: 'string',
+        date_filter: 'string'
+      }
+    },
+
+    'filters-changed': {
+      label: { en: 'Filters Changed', de: 'Filter geändert' },
+      event: {
+        filters: {
+          class: 'string',
+          student: 'string',
+          date: 'string',
+          status: 'string'
+        },
+        resultCount: 'number'
+      }
+    },
+
+    'row-selected': {
+      label: { en: 'Row Selected', de: 'Zeile ausgewählt' },
+      event: {
+        selectedEntry: 'object',
+        studentId: 'string',
+        absenceId: 'string'
+      }
+    },
+
+    'export-data': {
+      label: { en: 'Export Data', de: 'Daten exportieren' },
+      event: {
+        format: 'string',
+        dataCount: 'number',
+        filters: 'object',
+        data: 'array'
+      }
+    },
+
+    'data-loaded': {
+      label: { en: 'Data Loaded', de: 'Daten geladen' },
+      event: {
+        count: 'number',
+        totalCount: 'number',
+        timestamp: 'string'
+      }
+    }
   }
 };
