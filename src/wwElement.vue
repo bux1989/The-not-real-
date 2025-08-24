@@ -1145,8 +1145,18 @@ export default {
     },
 
     handleFormSubmit() {
+      console.log('handleFormSubmit called', {
+        formData: this.formData,
+        validation: {
+          studentId: !!this.formData.studentId,
+          startDate: !!this.formData.startDate,
+          status: !!this.formData.status
+        }
+      });
+
       // Validate required fields
       if (!this.formData.studentId || !this.formData.startDate || !this.formData.status) {
+        console.log('Validation failed - missing required fields');
         alert('Bitte füllen Sie alle Pflichtfelder aus.');
         return;
       }
@@ -1164,6 +1174,7 @@ export default {
         has_attachment: this.formData.hasAttachment
       };
 
+      console.log('About to call handleSaveEntry with:', entryData);
       this.handleSaveEntry(entryData);
     },
 
