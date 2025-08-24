@@ -341,104 +341,42 @@ export default {
     hyperlink: false
   },
 
-  triggerEvents: [
+  actions: [
     {
-      name: 'add-absence',
       label: { en: 'Add Absence', de: 'Fehlzeit hinzufügen' },
-      event: {
-        timestamp: 'string'
-      }
+      action: 'add-absence'
     },
     {
-      name: 'save-entry',
       label: { en: 'Save Entry', de: 'Eintrag speichern' },
-      event: {
-        action: 'string',
-        id: 'string',
-        data: {
-          student_id: 'string',
-          school_id: 'string',
-          start_date: 'string',
-          end_date: 'string',
-          duration: 'string',
-          time_range: 'string',
-          status: 'string',
-          reason: 'string',
-          has_attachment: 'boolean'
-        }
-      }
+      action: 'save-entry'
     },
     {
-      name: 'edit-absence',
       label: { en: 'Edit Absence', de: 'Fehlzeit bearbeiten' },
-      event: {
-        absenceId: 'string',
-        studentName: 'string',
-        studentClass: 'string',
-        currentData: 'object'
-      }
+      action: 'edit-absence'
     },
     {
-      name: 'delete-absence',
       label: { en: 'Delete Absence', de: 'Fehlzeit löschen' },
-      event: {
-        absenceId: 'string',
-        school_id: 'string',
-        studentName: 'string',
-        confirmed: 'boolean'
-      }
+      action: 'delete-absence'
     },
     {
-      name: 'refresh-data',
       label: { en: 'Refresh Data', de: 'Daten aktualisieren' },
-      event: {
-        school_id: 'string',
-        class_filter: 'string',
-        student_search: 'string',
-        status_filter: 'string',
-        date_filter: 'string'
-      }
+      action: 'refresh-data'
     },
     {
-      name: 'filters-changed',
       label: { en: 'Filters Changed', de: 'Filter geändert' },
-      event: {
-        filters: {
-          class: 'string',
-          student: 'string',
-          date: 'string',
-          status: 'string'
-        },
-        resultCount: 'number'
-      }
+      action: 'filters-changed'
     },
     {
-      name: 'row-selected',
       label: { en: 'Row Selected', de: 'Zeile ausgewählt' },
-      event: {
-        selectedEntry: 'object',
-        studentId: 'string',
-        absenceId: 'string'
-      }
+      action: 'row-selected'
     },
     {
-      name: 'export-data',
       label: { en: 'Export Data', de: 'Daten exportieren' },
-      event: {
-        format: 'string',
-        dataCount: 'number',
-        filters: 'object',
-        data: 'array'
-      }
+      action: 'export-data'
     },
     {
-      name: 'data-loaded',
       label: { en: 'Data Loaded', de: 'Daten geladen' },
-      event: {
-        count: 'number',
-        totalCount: 'number',
-        timestamp: 'string'
-      }
+      action: 'data-loaded'
     }
   ]
 };
