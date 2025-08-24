@@ -290,7 +290,17 @@
                   :style="{ backgroundColor: getStatusColor(entry.status) }"
                 >
                   <svg v-if="content.showStatusIcons" class="status-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <component :is="getStatusIconPath(entry.status)" />
+                    <circle v-if="entry.status === 'krankgemeldet'" cx="12" cy="12" r="10"/>
+                    <path v-if="entry.status === 'krankgemeldet'" d="M9 12l2 2 4-4"/>
+                    <circle v-else-if="entry.status === 'unentschuldigt'" cx="12" cy="12" r="10"/>
+                    <line v-if="entry.status === 'unentschuldigt'" x1="15" y1="9" x2="9" y2="15"/>
+                    <line v-if="entry.status === 'unentschuldigt'" x1="9" y1="9" x2="15" y2="15"/>
+                    <path v-else-if="entry.status === 'beurlaubt'" d="M12 1l3 6 6 1-4.5 4.5 1 6.5-5.5-3-5.5 3 1-6.5L3 8l6-1z"/>
+                    <circle v-else-if="entry.status === 'verspätet'" cx="12" cy="12" r="10"/>
+                    <polyline v-if="entry.status === 'verspätet'" points="12,6 12,12 16,14"/>
+                    <circle v-else cx="12" cy="12" r="10"/>
+                    <path v-if="entry.status === 'ungeklärt'" d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                    <line v-if="entry.status === 'ungeklärt'" x1="12" y1="17" x2="12.01" y2="17"/>
                   </svg>
                   {{ getStatusText(entry.status) }}
                 </span>
@@ -469,7 +479,10 @@ export default {
       error: null,
       
       // Data cache
-      lastUpdate: null
+      lastUpdate: null,
+
+      // Debug mode
+      debugInfo: {}
     };
   },
   
@@ -481,24 +494,23 @@ export default {
       };
     },
     
-    // Get data from WeWeb collections
+    // Get data from WeWeb bound properties
     allData() {
-      try {
-        const data = this.$wwLib?.wwCollection?.getCollectionData(this.content.attendanceCollection);
-        return Array.isArray(data) ? data : this.getMockData();
-      } catch (error) {
-        console.warn('Failed to load attendance data:', error);
-        return this.getMockData();
+      // Use bound data from WeWeb, fallback to mock data for testing
+      const boundData = this.content.attendanceData;
+      if (Array.isArray(boundData) && boundData.length > 0) {
+        return boundData;
       }
+      return this.getMockData();
     },
     
     availableClasses() {
-      try {
-        const classes = this.$wwLib?.wwCollection?.getCollectionData(this.content.classesCollection);
-        return Array.isArray(classes) ? classes : this.getDefaultClasses();
-      } catch (error) {
-        return this.getDefaultClasses();
+      // Use bound class data from WeWeb, fallback to default classes
+      const boundClasses = this.content.classesData;
+      if (Array.isArray(boundClasses) && boundClasses.length > 0) {
+        return boundClasses;
       }
+      return this.getDefaultClasses();
     },
     
     hasData() {
@@ -651,6 +663,26 @@ export default {
           this.sortOrder = newVal;
         }
       }
+    },
+
+    // Watch for data changes from WeWeb
+    'content.attendanceData': {
+      handler(newData) {
+        if (this.content.debugMode) {
+          console.log('Attendance data updated:', newData);
+        }
+        this.lastUpdate = new Date();
+      },
+      deep: true
+    },
+
+    'content.classesData': {
+      handler(newData) {
+        if (this.content.debugMode) {
+          console.log('Classes data updated:', newData);
+        }
+      },
+      deep: true
     }
   },
   
@@ -667,30 +699,28 @@ export default {
   },
   
   methods: {
-    // Data loading
+    // Data refresh (emit event for WeWeb to handle)
     async loadData() {
-      if (!this.content.attendanceCollection) return;
-      
       try {
         this.isLoading = true;
         this.error = null;
-        
-        // Refresh WeWeb collection with current filters
-        await this.$wwLib?.wwCollection?.executeQuery(this.content.attendanceCollection, {
+
+        // Emit event for WeWeb to refresh data with current filters
+        this.emitEvent('refresh-data', {
           school_id: this.content.schoolId,
           class_filter: this.filters.class || 'alle',
           student_search: this.filters.student || '',
           status_filter: this.filters.status || 'alle',
           date_filter: this.filters.date || this.getCurrentDate()
         });
-        
+
         this.lastUpdate = new Date();
         this.emitEvent('data-loaded', {
           count: this.filteredData.length,
           totalCount: this.allData.length,
           timestamp: this.lastUpdate.toISOString()
         });
-        
+
       } catch (error) {
         console.error('Failed to load data:', error);
         this.error = error.message;
@@ -843,13 +873,13 @@ export default {
     // Status methods
     getStatusColor(status) {
       const colors = {
-        krankgemeldet: this.content.statusColorSick || '#22c55e',
-        unentschuldigt: this.content.statusColorUnexcused || '#ef4444',
-        beurlaubt: this.content.statusColorExcused || '#3b82f6',
-        verspätet: this.content.statusColorLate || '#f59e0b',
-        ungeklärt: this.content.statusColorUnclear || '#6b7280'
+        krankgemeldet: this.content.statusColorSick || '#16a34a',
+        unentschuldigt: this.content.statusColorUnexcused || '#dc2626',
+        beurlaubt: this.content.statusColorExcused || '#2563eb',
+        verspätet: this.content.statusColorLate || '#ca8a04',
+        ungeklärt: this.content.statusColorUnclear || '#64748b'
       };
-      return colors[status] || '#6b7280';
+      return colors[status] || '#64748b';
     },
     
     getStatusText(status) {
@@ -867,17 +897,6 @@ export default {
       return `status-${status}`;
     },
     
-    getStatusIconPath(status) {
-      // Return different icon paths based on status
-      const icons = {
-        krankgemeldet: 'circle',
-        unentschuldigt: 'alert-circle',
-        beurlaubt: 'shield',
-        verspätet: 'clock',
-        ungeklärt: 'help-circle'
-      };
-      return icons[status] || 'help-circle';
-    },
     
     getSourceTitle(sourceType) {
       const titles = {
@@ -1073,8 +1092,10 @@ export default {
   color: #1f2937;
   line-height: 1.5;
   width: 100%;
-  padding: 20px;
+  padding: 24px;
   box-sizing: border-box;
+  background: #f8fafc;
+  min-height: 100vh;
 }
 
 /* Header */
@@ -1082,14 +1103,16 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
+  margin-bottom: 32px;
+  padding: 0;
 }
 
 .dashboard-title {
-  font-size: 32px;
-  font-weight: 700;
+  font-size: 36px;
+  font-weight: 600;
   margin: 0;
-  color: #111827;
+  color: #0f172a;
+  letter-spacing: -0.025em;
 }
 
 .header-actions {
@@ -1100,18 +1123,19 @@ export default {
 
 /* Buttons */
 .primary-btn {
-  background: #3b82f6;
+  background: #0f172a;
   color: white;
   border: none;
-  border-radius: var(--border-radius, 8px);
-  padding: 8px 16px;
+  border-radius: 6px;
+  padding: 10px 16px;
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
   display: flex;
   align-items: center;
   gap: 8px;
-  transition: background-color 0.2s;
+  transition: all 0.2s;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
 }
 
 .primary-btn:hover {
@@ -1144,11 +1168,11 @@ export default {
 }
 
 .export-btn {
-  background: transparent;
+  background: white;
   color: #374151;
   border: 1px solid #d1d5db;
-  border-radius: var(--border-radius, 8px);
-  padding: 8px 16px;
+  border-radius: 6px;
+  padding: 10px 16px;
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
@@ -1156,6 +1180,7 @@ export default {
   align-items: center;
   gap: 8px;
   transition: all 0.2s;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
 }
 
 .export-btn:hover {
@@ -1286,10 +1311,11 @@ export default {
 /* Filters */
 .filters-card {
   background: white;
-  border: 1px solid #e5e7eb;
-  border-radius: var(--border-radius, 8px);
-  padding: 20px;
-  margin-bottom: 20px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
 }
 
 .filters-grid {
@@ -1313,12 +1339,13 @@ export default {
 
 .filter-input,
 .filter-select {
-  padding: 8px 12px;
+  padding: 10px 12px;
   border: 1px solid #d1d5db;
-  border-radius: var(--border-radius, 8px);
+  border-radius: 6px;
   font-size: 14px;
   background: white;
-  transition: border-color 0.2s;
+  transition: all 0.2s;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
 }
 
 .filter-input:focus,
@@ -1394,19 +1421,21 @@ export default {
 
 /* Results Summary */
 .results-summary {
-  color: #6b7280;
+  color: #64748b;
   font-size: 14px;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
+  font-weight: 400;
 }
 
 /* Table */
 .table-container {
   background: white;
-  border: 1px solid #e5e7eb;
-  border-radius: var(--border-radius, 8px);
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
   overflow: hidden;
   height: var(--table-height, 600px);
   overflow-y: auto;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
 }
 
 .fehlzeiten-table {
@@ -1415,15 +1444,16 @@ export default {
 }
 
 .fehlzeiten-table th {
-  background: #f9fafb;
-  padding: 12px 16px;
+  background: #f8fafc;
+  padding: 16px 20px;
   text-align: left;
-  font-weight: 600;
-  color: #374151;
-  border-bottom: 1px solid #e5e7eb;
+  font-weight: 500;
+  color: #475569;
+  border-bottom: 1px solid #e2e8f0;
   position: sticky;
   top: 0;
   z-index: 1;
+  font-size: 14px;
 }
 
 .sortable-header {
@@ -1455,9 +1485,10 @@ export default {
 }
 
 .fehlzeiten-table td {
-  padding: 12px 16px;
-  border-bottom: 1px solid #f3f4f6;
+  padding: 16px 20px;
+  border-bottom: 1px solid #f1f5f9;
   vertical-align: middle;
+  font-size: 14px;
 }
 
 .student-name-cell {
@@ -1487,12 +1518,13 @@ export default {
 .status-badge {
   display: inline-flex;
   align-items: center;
-  padding: 4px 8px;
-  border-radius: 4px;
+  padding: 6px 10px;
+  border-radius: 6px;
   font-size: 12px;
   font-weight: 500;
   color: white;
   white-space: nowrap;
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 /* Pagination */
