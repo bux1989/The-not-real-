@@ -338,7 +338,9 @@ export default {
   options: {
     autoByContent: true,
     sizable: true,
-    hyperlink: false
+    hyperlink: false,
+    useClassicEditor: false,
+    responsive: true
   },
 
   triggerEvents: [
