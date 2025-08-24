@@ -341,7 +341,7 @@ export default {
     hyperlink: false
   },
 
-  triggers: [
+  triggerEvents: [
     {
       name: 'add-absence',
       label: { en: 'Add Absence', de: 'Fehlzeit hinzufügen' },
@@ -355,7 +355,17 @@ export default {
       event: {
         action: 'string',
         id: 'string',
-        data: 'object'
+        data: {
+          student_id: 'string',
+          school_id: 'string',
+          start_date: 'string',
+          end_date: 'string',
+          duration: 'string',
+          time_range: 'string',
+          status: 'string',
+          reason: 'string',
+          has_attachment: 'boolean'
+        }
       }
     },
     {
@@ -393,7 +403,12 @@ export default {
       name: 'filters-changed',
       label: { en: 'Filters Changed', de: 'Filter geändert' },
       event: {
-        filters: 'object',
+        filters: {
+          class: 'string',
+          student: 'string',
+          date: 'string',
+          status: 'string'
+        },
         resultCount: 'number'
       }
     },
