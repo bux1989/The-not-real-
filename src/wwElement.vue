@@ -1153,7 +1153,10 @@ export default {
       };
 
       console.log('Emitting save-entry event:', eventData);
-      this.emitEvent('save-entry', eventData);
+      this.$emit('trigger-event', {
+        name: 'save-entry',
+        event: eventData
+      });
 
       console.log('save-entry event emitted via trigger-event, closing modal');
       this.closeAddEditModal();
