@@ -366,22 +366,6 @@ export default {
       }
     },
     {
-      name: 'time-period-selected',
-      label: { en: 'Time Period Selected', de: 'Zeitraum ausgewählt' },
-      event: {
-        timestamp: 'string',
-        current_time: 'string',
-        duration_type: 'string',
-        action: 'string',
-        context: {
-          is_editing: 'boolean',
-          student_name: 'string',
-          selected_date: 'string',
-          is_multiple_days: 'boolean'
-        }
-      }
-    },
-    {
       name: 'save-entry',
       label: { en: 'Save Entry', de: 'Eintrag speichern' },
       event: {
