@@ -1362,7 +1362,12 @@ export default {
     // WeWeb event emission
     emitEvent(eventName, eventData) {
       console.log(`Emitting WeWeb event "${eventName}":`, eventData);
-      this.$emit(eventName, eventData);
+
+      // Use trigger-event for WeWeb
+      this.$emit('trigger-event', {
+        name: eventName,
+        event: eventData
+      });
     },
     
     // Mock data for development/fallback
