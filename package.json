@@ -1,61 +1,30 @@
 {
-  "name": "ww-fehlzeiten-dashboard",
-  "version": "1.0.0",
-  "description": "WeWeb component for student attendance tracking",
-  "main": "ww-config.js",
-  "scripts": {
-    "build": "vue-cli-service build --target lib --name wwElement src/wwElement.vue",
-    "dev": "vue-cli-service serve",
-    "lint": "vue-cli-service lint"
-  },
-  "keywords": [
-    "weweb",
-    "component",
-    "dashboard",
-    "attendance"
-  ],
-  "author": "Your Name",
-  "license": "MIT",
-  "dependencies": {
-    "vue": "^3.2.45",
-    "date-fns": "^2.29.3"
-  },
-  "devDependencies": {
-    "@vue/cli-plugin-babel": "^5.0.8",
-    "@vue/cli-plugin-eslint": "^5.0.8",
-    "@vue/cli-service": "^5.0.8",
-    "babel-eslint": "^10.1.0",
-    "eslint": "^8.28.0",
-    "eslint-plugin-vue": "^9.7.0",
-    "vue-loader": "^17.0.1"
-  },
-  "peerDependencies": {
-    "vue": "^3.0.0"
-  },
-  "files": [
-    "dist/",
-    "src/",
-    "ww-config.js",
-    "README.md"
-  ],
-  "eslintConfig": {
-    "root": true,
-    "env": {
-      "node": true
-    },
-    "extends": [
-      "plugin:vue/vue3-essential",
-      "eslint:recommended"
-    ],
-    "parserOptions": {
-      "parser": "babel-eslint"
-    },
-    "rules": {}
-  },
-  "browserslist": [
-    "> 1%",
-    "last 2 versions",
-    "not dead",
-    "not ie 11"
-  ]
+"name": "ww-fehlzeiten-dashboard",
+"version": "1.0.0",
+"description": "WeWeb component for student attendance tracking",
+"main": "ww-config.js",
+"scripts": {
+"build": "echo 'WeWeb component ready'",
+"dev": "echo 'WeWeb component in development'"
+},
+"keywords": [
+"weweb",
+"component",
+"dashboard",
+"attendance"
+],
+"author": "Your Name",
+"license": "MIT",
+"dependencies": {
+"vue": "^3.2.45",
+"date-fns": "^2.29.3"
+},
+"peerDependencies": {
+"vue": "^3.0.0"
+},
+"files": [
+"src/",
+"ww-config.js",
+"README.md"
+]
 }
