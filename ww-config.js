@@ -400,6 +400,17 @@ export default {
       }
     },
     {
+      name: 'open-edit-absence',
+      label: { en: 'Open Edit Absence', de: 'Fehlzeit bearbeiten öffnen' },
+      event: {
+        action: 'string',
+        absenceId: 'string',
+        studentName: 'string',
+        studentClass: 'string',
+        currentData: 'object'
+      }
+    },
+    {
       name: 'edit-absence',
       label: { en: 'Edit Absence', de: 'Fehlzeit bearbeiten' },
       event: {
