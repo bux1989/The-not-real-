@@ -424,9 +424,10 @@ export default {
       name: 'delete-absence',
       label: { en: 'Delete Absence', de: 'Fehlzeit löschen' },
       event: {
-        absenceId: 'string',
+        absence_note_id: 'string',
         school_id: 'string',
-        studentName: 'string',
+        student_name: 'string',
+        deletion_reason: 'string',
         confirmed: 'boolean'
       }
     },
