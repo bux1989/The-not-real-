@@ -716,7 +716,7 @@ export default {
         // Student search
         if (this.filters.student) {
           const searchTerm = this.filters.student.toLowerCase();
-          const studentName = `${item.first_name} ${item.last_name}`.toLowerCase();
+          const studentName = (item.student_name || '').toLowerCase();
           if (!studentName.includes(searchTerm)) {
             return false;
           }
@@ -1037,10 +1037,6 @@ export default {
       // Always show modal unless explicitly disabled
       if (this.content.showDetailModal === false) return;
 
-      // Debug: Log the entry data structure
-      console.log('Row clicked - entry data:', entry);
-      console.log('Entry keys:', Object.keys(entry));
-
       this.selectedEntry = entry;
       this.showDetailModal = true;
 
@@ -1099,13 +1095,17 @@ export default {
     handleDeleteEntry() {
       if (!this.selectedEntry) return;
 
+      // Use absence_note_id instead of id (which might be daily log ID for recurring absences)
+      const absenceNoteId = this.selectedEntry.absence_note_id || this.selectedEntry.id;
+
       if (confirm('Fehlzeit wirklich löschen?')) {
         this.$emit('trigger-event', {
           name: 'delete-absence',
           event: {
-            absenceId: this.selectedEntry.id,
-            school_id: this.content.schoolId, // Include school_id for Supabase functions
-            studentName: this.selectedEntry.student_name,
+            absence_note_id: absenceNoteId,  // Use correct field name
+            school_id: this.content.schoolId,
+            student_name: this.selectedEntry.student_name,
+            deletion_reason: 'User requested deletion via dashboard',
             confirmed: true
           }
         });
