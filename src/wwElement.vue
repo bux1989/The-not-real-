@@ -262,7 +262,7 @@
           >
             <td>
               <div class="student-name-cell">
-                <span>{{ entry.first_name }}</span>
+                <span>{{ entry.student_name ? entry.student_name.split(' ')[0] : '' }}</span>
                 <svg
                   v-if="content.showSourceIndicators && entry.source_type === 'eltern-app'"
                   class="source-icon"
@@ -277,7 +277,7 @@
                 </svg>
               </div>
             </td>
-            <td>{{ entry.last_name }}</td>
+            <td>{{ entry.student_name ? entry.student_name.split(' ').slice(1).join(' ') : '' }}</td>
             <td>{{ entry.student_class }}</td>
             <td>
               <span v-if="entry.date_range" class="time-range">{{ entry.date_range }}</span>
@@ -746,12 +746,12 @@ export default {
         
         switch (this.sortBy) {
           case 'firstName':
-            aVal = a.first_name || '';
-            bVal = b.first_name || '';
+            aVal = a.student_name ? a.student_name.split(' ')[0] : '';
+            bVal = b.student_name ? b.student_name.split(' ')[0] : '';
             break;
           case 'lastName':
-            aVal = a.last_name || '';
-            bVal = b.last_name || '';
+            aVal = a.student_name ? a.student_name.split(' ').slice(1).join(' ') : '';
+            bVal = b.student_name ? b.student_name.split(' ').slice(1).join(' ') : '';
             break;
           case 'class':
             aVal = a.student_class || '';
