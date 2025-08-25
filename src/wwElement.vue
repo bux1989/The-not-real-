@@ -1037,6 +1037,10 @@ export default {
       // Always show modal unless explicitly disabled
       if (this.content.showDetailModal === false) return;
 
+      // Debug: Log the entry data structure
+      console.log('Row clicked - entry data:', entry);
+      console.log('Entry keys:', Object.keys(entry));
+
       this.selectedEntry = entry;
       this.showDetailModal = true;
 
