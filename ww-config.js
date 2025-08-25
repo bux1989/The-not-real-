@@ -345,6 +345,21 @@ export default {
 
   triggerEvents: [
     {
+      name: 'open-add-absence',
+      label: { en: 'Open Add Absence', de: 'Fehlzeit hinzufügen öffnen' },
+      event: {
+        action: 'string',
+        timestamp: 'string',
+        school_id: 'string',
+        current_filters: {
+          class: 'string',
+          student: 'string',
+          date: 'string',
+          status: 'string'
+        }
+      }
+    },
+    {
       name: 'add-absence',
       label: { en: 'Add Absence', de: 'Fehlzeit hinzufügen' },
       event: {
