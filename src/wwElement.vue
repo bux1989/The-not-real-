@@ -432,7 +432,7 @@
       </div>
     </div>
 
-    <!-- Add/Edit Modal -->
+    <!-- Add/Edit Modal (for editing only) -->
     <div v-if="showAddEditModal" class="modal-overlay" @click="closeAddEditModal">
       <div class="modal-content add-edit-modal" @click.stop>
         <div class="modal-header">
@@ -937,19 +937,25 @@ export default {
         this.error = null;
 
         // Emit event for WeWeb to refresh data with current filters
-        this.emitEvent('refresh-data', {
-          school_id: this.content.schoolId || '', // Ensure school_id is included
-          class_filter: this.filters.class || 'alle',
-          student_search: this.filters.student || '',
-          status_filter: this.filters.status || 'alle',
-          date_filter: this.filters.date || this.getCurrentDate()
+        this.$emit('trigger-event', {
+          name: 'refresh-data',
+          event: {
+            school_id: this.content.schoolId || '', // Ensure school_id is included
+            class_filter: this.filters.class || 'alle',
+            student_search: this.filters.student || '',
+            status_filter: this.filters.status || 'alle',
+            date_filter: this.filters.date || this.getCurrentDate()
+          }
         });
 
         this.lastUpdate = new Date();
-        this.emitEvent('data-loaded', {
-          count: this.filteredData.length,
-          totalCount: this.allData.length,
-          timestamp: this.lastUpdate.toISOString()
+        this.$emit('trigger-event', {
+          name: 'data-loaded',
+          event: {
+            count: this.filteredData.length,
+            totalCount: this.allData.length,
+            timestamp: this.lastUpdate.toISOString()
+          }
         });
 
       } catch (error) {
@@ -976,9 +982,12 @@ export default {
     onFiltersChange() {
       this.currentPage = 1; // Reset to first page
       this.loadData();
-      this.emitEvent('filters-changed', {
-        filters: { ...this.filters },
-        resultCount: this.filteredData.length
+      this.$emit('trigger-event', {
+        name: 'filters-changed',
+        event: {
+          filters: { ...this.filters },
+          resultCount: this.filteredData.length
+        }
       });
     },
     
@@ -1031,47 +1040,34 @@ export default {
       this.selectedEntry = entry;
       this.showDetailModal = true;
 
-      this.emitEvent('row-selected', {
-        selectedEntry: entry,
-        studentId: entry.student_id,
-        absenceId: entry.id
+      this.$emit('trigger-event', {
+        name: 'row-selected',
+        event: {
+          selectedEntry: entry,
+          studentId: entry.student_id,
+          absenceId: entry.id
+        }
       });
     },
     
     handleAddEntry() {
-      console.log('handleAddEntry called', {
-        showAddEditModal: this.showAddEditModal,
-        allowAdd: this.content.allowAdd,
-        showAddButton: this.content.showAddButton
-      });
+      console.log('handleAddEntry called - emitting open event for external popup');
 
-      this.editingEntry = null; // null means adding new entry
-      this.initializeForm();
-      this.showAddEditModal = true;
-
-      console.log('Modal should be open now:', this.showAddEditModal);
-
-      const now = new Date();
-      const eventData = {
-        timestamp: now.toISOString(),
-        current_date: now.toLocaleDateString('de-DE'),
-        current_time: now.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }),
-        current_filters: {
-          class: this.filters.class || 'alle',
-          student: this.filters.student || '',
-          date: this.filters.date || this.getCurrentDate(),
-          status: this.filters.status || 'alle'
-        },
-        action: 'open_add_modal',
-        context: {
+      // Just emit a simple open event for external popup to handle
+      this.$emit('trigger-event', {
+        name: 'open-add-absence',
+        event: {
+          action: 'open',
+          timestamp: new Date().toISOString(),
           school_id: this.content.schoolId || '',
-          user_timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-          session_id: Date.now().toString()
+          current_filters: {
+            class: this.filters.class || 'alle',
+            student: this.filters.student || '',
+            date: this.filters.date || this.getCurrentDate(),
+            status: this.filters.status || 'alle'
+          }
         }
-      };
-
-      console.log('Emitting add-absence event:', eventData);
-      this.emitEvent('add-absence', eventData);
+      });
     },
     
     handleEditEntry() {
@@ -1081,11 +1077,16 @@ export default {
       this.initializeForm();
       this.showAddEditModal = true;
 
-      this.emitEvent('edit-absence', {
-        absenceId: this.selectedEntry.id,
-        studentName: this.selectedEntry.student_name,
-        studentClass: this.selectedEntry.student_class,
-        currentData: this.selectedEntry
+      // Emit event to notify external systems that edit modal opened
+      this.$emit('trigger-event', {
+        name: 'open-edit-absence',
+        event: {
+          action: 'open',
+          absenceId: this.selectedEntry.id,
+          studentName: this.selectedEntry.student_name,
+          studentClass: this.selectedEntry.student_class,
+          currentData: this.selectedEntry
+        }
       });
 
       this.closeDetailModal();
@@ -1095,11 +1096,14 @@ export default {
       if (!this.selectedEntry) return;
 
       if (confirm('Fehlzeit wirklich löschen?')) {
-        this.emitEvent('delete-absence', {
-          absenceId: this.selectedEntry.id,
-          school_id: this.content.schoolId, // Include school_id for Supabase functions
-          studentName: this.selectedEntry.student_name,
-          confirmed: true
+        this.$emit('trigger-event', {
+          name: 'delete-absence',
+          event: {
+            absenceId: this.selectedEntry.id,
+            school_id: this.content.schoolId, // Include school_id for Supabase functions
+            studentName: this.selectedEntry.student_name,
+            confirmed: true
+          }
         });
 
         this.closeDetailModal();
@@ -1107,11 +1111,14 @@ export default {
     },
     
     handleExport(format) {
-      this.emitEvent('export-data', {
-        format,
-        dataCount: this.filteredData.length,
-        filters: this.currentFilters,
-        data: this.filteredData
+      this.$emit('trigger-event', {
+        name: 'export-data',
+        event: {
+          format,
+          dataCount: this.filteredData.length,
+          filters: this.currentFilters,
+          data: this.filteredData
+        }
       });
       
       this.showExportMenu = false;
